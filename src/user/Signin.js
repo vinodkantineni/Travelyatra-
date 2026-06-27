@@ -1,12 +1,9 @@
 import React, { useState } from "react";
-import { Redirect } from "react-router-dom";
-import { Link} from "react-router-dom";
+import { Redirect, Link } from "react-router-dom";
 import Layout from "../core/Layout";
 import { signin, authenticate, isAuthenticated } from "../auth";
-import LoadingOverlay from 'react-loading-overlay';
-import avatar from './../image/login/avatar.png';
-import sideimage from './../image/login/side.jpg';
-import './../CSS/signin.css';
+import { Globe, Mail, Lock } from "lucide-react";
+
 const Signin = () => {
     const [values, setValues] = useState({
         email: "",
@@ -40,72 +37,129 @@ const Signin = () => {
         });
     };
 
-    const signUpForm = () => (
-        <div className="row display-flex mt-3">
-            <div className="col-sm-8 col-xs-10 col-md-4 offset-md-2 offset-sm-2 offset-xs-1 py-4 px-3 rounded-left" id="login-intro-form">
-                <h2 className="text-center text-white h2 font-weight-bold mt-2">Hello Globetrotter</h2>
-                <div className="login-account-wall p-4 mb-2">
-                    <img className="rounded-circle mx-auto d-block" src={avatar} alt="" />
-                    <form>
-                        <div className="form-group mt-3">
-                            <label className="text-white font-weight-bold">Email</label>
-                            <input
-                             onChange={handleChange("email")}
-                            type="email"
-                            className="form-control"
-                            value={email}
-                            />
-                        </div>
-
-                        <div className="form-group mt-3">
-                            <label className="text-white font-weight-bold">Password</label>
-                            <input
-                                onChange={handleChange("password")}
-                                type="password"
-                                className="form-control"
-                                value={password}
-                            />
-                        </div>
-                        <button onClick={clickSubmit} className="btn btn-success btn-block rounded font-weight-bold text-center">
-                        Submit
-                        </button>
-                    </form>
-                    <div className="text-center">
-                    <span className="text-center d-block text-danger font-weight-bold text-italic">or</span>
-                    <Link to="/signup" className="text-white">Create an account </Link>
-                    </div>
+    const signInForm = () => (
+        <div style={{
+            display: "grid",
+            gridTemplateColumns: "1.2fr 1fr",
+            minHeight: "75vh",
+            borderRadius: "var(--radius-2xl)",
+            overflow: "hidden",
+            boxShadow: "var(--shadow-xl)",
+            backgroundColor: "var(--card-bg)",
+            border: "1px solid var(--border-color)",
+            margin: "2rem auto",
+            maxWidth: "1000px"
+        }} className="auth-split-grid">
+            
+            {/* Left Column: Form */}
+            <div style={{ padding: "3.5rem 3rem", display: "flex", flexDirection: "column", justifycontent: "center", gap: "1.5rem" }}>
+                <div>
+                    <span style={{ fontSize: "0.8rem", fontWeight: "700", color: "var(--primary)", textTransform: "uppercase", letterSpacing: "1px" }}>Welcome Back</span>
+                    <h2 style={{ fontSize: "2rem", fontWeight: "800", marginTop: "0.25rem" }}>Hello Globetrotter</h2>
+                    <p style={{ color: "var(--text-secondary)", fontSize: "0.9rem" }}>Enter your credentials to access your luxury travel dashboard.</p>
                 </div>
 
+                <form onSubmit={clickSubmit} style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+                    <div className="form-input-group">
+                        <label className="form-label" style={{ display: "flex", alignItems: "center", gap: "0.25rem" }}>
+                            <Mail size={14} className="text-secondary" /> Email Address
+                        </label>
+                        <input
+                            onChange={handleChange("email")}
+                            type="email"
+                            className="form-input"
+                            value={email}
+                            placeholder="you@example.com"
+                            required
+                        />
+                    </div>
+
+                    <div className="form-input-group">
+                        <label className="form-label" style={{ display: "flex", alignItems: "center", gap: "0.25rem" }}>
+                            <Lock size={14} className="text-secondary" /> Password
+                        </label>
+                        <input
+                            onChange={handleChange("password")}
+                            type="password"
+                            className="form-input"
+                            value={password}
+                            placeholder="••••••••"
+                            required
+                        />
+                    </div>
+
+                    <button type="submit" className="btn-premium" style={{ width: "100%", padding: "0.85rem", marginTop: "0.5rem" }}>
+                        {loading ? "Signing in..." : "Sign In"}
+                    </button>
+                </form>
+
+                <div style={{ textAlign: "center", fontSize: "0.85rem", color: "var(--text-secondary)" }}>
+                    Don't have an account? <Link to="/signup" style={{ color: "var(--primary)", fontWeight: "600", textDecoration: "none" }}>Create one now</Link>
+                </div>
             </div>
-            <div className="col-sm-8 col-xs-10 col-md-4 rounded-right py-4 px-3" id="login-intro">
-                <h2 className="login-login-title text-center mt-2 h2">Welcome toTravelYaari</h2>
-                <img className="img-fluid img-rounded" src={sideimage} alt="signup" />
-                <p className="text-center text-warning">We Are Happy to see you here. We are working to provide the best services to you.</p>
+
+            {/* Right Column: Premium Image Visual */}
+            <div style={{
+                position: "relative",
+                backgroundImage: "url('https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=800&q=80')",
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "flex-end",
+                padding: "3rem",
+                color: "#FFFFFF"
+            }} className="auth-visual-panel">
+                <div style={{
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    width: "100%",
+                    height: "100%",
+                    backgroundColor: "rgba(15, 23, 42, 0.4)",
+                    zIndex: 1
+                }} />
+                
+                <div style={{ position: "relative", zIndex: 2 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "1rem" }}>
+                        <Globe size={24} style={{ color: "#38BDF8" }} />
+                        <span style={{ fontWeight: "800", fontSize: "1.2rem", letterSpacing: "-0.5px" }}>TravelYatra</span>
+                    </div>
+                    <p style={{ fontSize: "1.1rem", fontWeight: "500", fontStyle: "italic", opacity: 0.95 }}>
+                        "Travel is the only thing you buy that makes you richer."
+                    </p>
+                </div>
             </div>
+
+            <style>{`
+                @media (max-width: 768px) {
+                    .auth-split-grid {
+                        grid-template-columns: 1fr !important;
+                    }
+                    .auth-visual-panel {
+                        display: none !important;
+                    }
+                }
+            `}</style>
         </div>
     );
 
     const showError = () => (
         <div
-            className="alert alert-danger"
-            style={{ display: error ? "" : "none" }}
+            className="custom-toast"
+            style={{ 
+                display: error ? "flex" : "none", 
+                backgroundColor: "var(--card-bg)",
+                borderLeftColor: "var(--danger)",
+                position: "fixed",
+                top: "6rem",
+                right: "2rem",
+                zIndex: 1000
+            }}
         >
-            {error}
+            <span style={{ color: "var(--danger)", fontWeight: 600 }}>{error}</span>
         </div>
     );
-
-    const showLoading = () =>
-        loading && (
-            // <div className="alert alert-info">
-            //     <h2>Loading...</h2>
-            // </div>
-            <LoadingOverlay
-        active={loading}
-        spinner
-        text='Loading......'
-        className="loader">
-        </LoadingOverlay>
-        );
 
     const redirectUser = () => {
         if (redirectToReferrer) {
@@ -121,12 +175,9 @@ const Signin = () => {
     };
 
     return (
-        <Layout
-            className="container-fluid"
-        >
-            {showLoading()}
+        <Layout title="" description="">
             {showError()}
-            {signUpForm()}
+            {signInForm()}
             {redirectUser()}
         </Layout>
     );

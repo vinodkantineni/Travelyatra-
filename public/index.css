@@ -1,11 +1,14 @@
-html{
+html {
     scrollbar-width: none;
+    /* Responsive font scaling: 16px on mobile → up to 20px on large/4K screens */
+    font-size: clamp(16px, 1.35vw, 20px);
 }
 ::-webkit-scrollbar {
     display: none;
-    }
-    * {
-        margin: 0;
-        padding: 0;
-        font-family: Arial, Helvetica, sans-serif;
-    }
+}
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', 'Segoe UI', Arial, Helvetica, sans-serif;
+}

@@ -1,20 +1,25 @@
 import React from "react";
 import Menu from "./Menu";
-import Footer from './FooterPage'
-import '@fortawesome/fontawesome-free/css/all.min.css';
-import 'bootstrap-css-only/css/bootstrap.min.css';
-import 'mdbreact/dist/css/mdb.css';
-import "./../CSS/menu.css";
+import Footer from './FooterPage';
+import "../styles.css";
 
 const Layout = ({
-    title = "Title",
-    description = "Description",
-    className,
+    title = "",
+    description = "",
+    className = "",
     children
 }) => (
-    <div>
+    <div className="app-layout">
         <Menu />
-        <div className={className}>{children}</div>
+        <main className={`main-content ${className}`} style={{ paddingTop: '80px', minHeight: '80vh' }}>
+            {title && (
+                <header className="page-header section-padding" style={{ paddingBottom: '2rem' }}>
+                    <h1 className="h1 text-center font-weight-bold" style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>{title}</h1>
+                    {description && <p className="text-center text-secondary" style={{ fontSize: '1.1rem' }}>{description}</p>}
+                </header>
+            )}
+            <div>{children}</div>
+        </main>
         <Footer />
     </div>
 );

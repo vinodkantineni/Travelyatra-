@@ -1,12 +1,10 @@
 import React, { useState, useEffect } from 'react';
-/* eslint-disable no-unused-vars */
-import { getProducts, getBraintreeClientToken, processPayment, createOrder } from './apiCore';
+import { getBraintreeClientToken, processPayment, createOrder } from './apiCore';
 import { emptyCart } from './cartHelpers';
-import Card from './Card';
 import { isAuthenticated } from '../auth';
 import { Link } from 'react-router-dom';
-// import "braintree-web"; // not using this package
 import DropIn from 'braintree-web-drop-in-react';
+import { CreditCard, MapPin, CheckCircle } from 'lucide-react';
 
 const Checkout = ({ products, setRun = f => f, run = undefined }) => {
     const [data, setData] = useState({
@@ -23,12 +21,11 @@ const Checkout = ({ products, setRun = f => f, run = undefined }) => {
 
     const getToken = (userId, token) => {
         getBraintreeClientToken(userId, token).then(data => {
-            if (data.error) {
+            if (data && data.error) {
                 console.log(data.error);
                 setData({ ...data, error: data.error });
-            } else {
-                console.log(data);
-                setData({ clientToken: data.clientToken });
+            } else if (data) {
+                setData({ ...data, clientToken: data.clientToken });
             }
         });
     };
@@ -48,34 +45,12 @@ const Checkout = ({ products, setRun = f => f, run = undefined }) => {
         }, 0);
     };
 
-    const showCheckout = () => {
-        return isAuthenticated() ? (
-            <div>{showDropIn()}</div>
-        ) : (
-            <Link to="/signin">
-                <button className="btn btn-primary p-2 by-2">Sign in to checkout</button>
-            </Link>
-        );
-    };
-
-    let deliveryAddress = data.address;
-
     const buy = () => {
-        setData({ loading: true });
-        // send the nonce to your server
-        // nonce = data.instance.requestPaymentMethod()
+        setData({ ...data, loading: true });
         let nonce;
-        let getNonce = data.instance.requestPaymentMethod()
-            .then(data => {
-                // console.log(data);
-                nonce = data.nonce;
-                // once you have nonce (card type, card number) send nonce as 'paymentMethodNonce'
-                // and also total to be charged
-                // console.log(
-                //     "send nonce and total to process: ",
-                //     nonce,
-                //     getTotal(products)
-                // );
+        data.instance.requestPaymentMethod()
+            .then(payData => {
+                nonce = payData.nonce;
                 const paymentData = {
                     paymentMethodNonce: nonce,
                     amount: getTotal(products)
@@ -83,23 +58,19 @@ const Checkout = ({ products, setRun = f => f, run = undefined }) => {
 
                 processPayment(userId, token, paymentData)
                     .then(response => {
-                        console.log(response);
-                        // empty cart
-                        // create order
-
                         const createOrderData = {
                             products: products,
                             transaction_id: response.transaction.id,
                             amount: response.transaction.amount,
-                            address: deliveryAddress
+                            address: data.address
                         };
 
                         createOrder(userId, token, createOrderData)
-                            .then(response => {
+                            .then(orderResponse => {
                                 emptyCart(() => {
-                                    setRun(!run); // run useEffect in parent Cart
-                                    console.log('payment success and empty cart');
+                                    setRun(!run);
                                     setData({
+                                        ...data,
                                         loading: false,
                                         success: true
                                     });
@@ -107,69 +78,99 @@ const Checkout = ({ products, setRun = f => f, run = undefined }) => {
                             })
                             .catch(error => {
                                 console.log(error);
-                                setData({ loading: false });
+                                setData({ ...data, loading: false });
                             });
                     })
                     .catch(error => {
                         console.log(error);
-                        setData({ loading: false });
+                        setData({ ...data, loading: false });
                     });
             })
             .catch(error => {
-                // console.log("dropin error: ", error);
-                setData({ ...data, error: error.message });
+                setData({ ...data, error: error.message, loading: false });
             });
     };
 
     const showDropIn = () => (
-        <div onBlur={() => setData({ ...data, error: '' })}>
+        <div onBlur={() => setData({ ...data, error: '' })} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
             {data.clientToken !== null && products.length > 0 ? (
-                <div>
-                    <div className="gorm-group mb-3">
-                        <label className="text-muted">Delivery address:</label>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                    <div className="form-input-group">
+                        <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                            <MapPin size={14} className="text-secondary" /> Delivery / Hotel Address
+                        </label>
                         <textarea
                             onChange={handleAddress}
-                            className="form-control"
+                            className="form-input"
                             value={data.address}
-                            placeholder="Type your delivery address here..."
+                            placeholder="Type your complete delivery/stay address here..."
+                            rows="3"
+                            required
+                            style={{ resize: 'none' }}
                         />
                     </div>
 
-                    <DropIn
-                        options={{
-                            authorization: data.clientToken,
-                            paypal: {
-                                flow: 'vault'
-                            }
-                        }}
-                        onInstance={instance => (data.instance = instance)}
-                    />
-                    <button onClick={buy} className="btn btn-success btn-block">
-                        Pay
+                    <div style={{
+                        border: '1px solid var(--border-color)',
+                        borderRadius: 'var(--radius-lg)',
+                        padding: '0.5rem',
+                        backgroundColor: 'var(--background)'
+                    }}>
+                        <DropIn
+                            options={{
+                                authorization: data.clientToken,
+                                paypal: {
+                                    flow: 'vault'
+                                }
+                            }}
+                            onInstance={instance => (data.instance = instance)}
+                        />
+                    </div>
+
+                    <button onClick={buy} className="btn-premium" style={{ width: '100%', padding: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.5rem', justifyContent: 'center' }}>
+                        <CreditCard size={18} />
+                        {data.loading ? "Processing..." : `Pay ₹${getTotal()}`}
                     </button>
                 </div>
-            ) : null}
+            ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                    <div className="skeleton" style={{ height: '80px', borderRadius: 'var(--radius-md)' }}></div>
+                    <div className="skeleton" style={{ height: '44px', borderRadius: 'var(--radius-md)' }}></div>
+                </div>
+            )}
         </div>
     );
 
     const showError = error => (
-        <div className="alert alert-danger" style={{ display: error ? '' : 'none' }}>
-            {error}
+        <div className="custom-toast" style={{ display: error ? 'flex' : 'none', borderLeftColor: 'var(--danger)', margin: '1rem 0', position: 'static' }}>
+            <span style={{ color: 'var(--danger)', fontSize: '0.85rem' }}>{error}</span>
         </div>
     );
 
     const showSuccess = success => (
-        <div className="alert alert-info" style={{ display: success ? '' : 'none' }}>
-            Thanks! Your payment was successful!
+        <div className="custom-toast" style={{ display: success ? 'flex' : 'none', borderLeftColor: 'var(--success)', margin: '1rem 0', position: 'static' }}>
+            <CheckCircle size={18} style={{ color: 'var(--success)', marginRight: '0.5rem' }} />
+            <span style={{ color: 'var(--success)', fontSize: '0.85rem', fontWeight: 600 }}>Thanks! Your booking and payment were successful.</span>
         </div>
     );
 
-    const showLoading = loading => loading && <h2 className="text-danger">Loading...</h2>;
+    const showCheckout = () => {
+        return isAuthenticated() ? (
+            <div>{showDropIn()}</div>
+        ) : (
+            <Link to="/signin" className="btn-premium" style={{ width: '100%', textDecoration: 'none' }}>
+                Sign in to checkout
+            </Link>
+        );
+    };
 
     return (
-        <div>
-            <h4 className="p-2 my-2 text-info font-weight-bold">Total: ${getTotal()}</h4>
-            {showLoading(data.loading)}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontWeight: '600', color: 'var(--text-primary)' }}>Total Price</span>
+                <span style={{ fontSize: '1.5rem', fontWeight: '800', color: 'var(--primary)' }}>₹{getTotal()}</span>
+            </div>
+            
             {showSuccess(data.success)}
             {showError(data.error)}
             {showCheckout()}

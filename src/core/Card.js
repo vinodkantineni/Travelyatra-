@@ -1,13 +1,10 @@
-import React, { useState } from 'react';
-import { Link, Redirect } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, Redirect, withRouter } from 'react-router-dom';
 import ShowImage from './ShowImage';
 import moment from 'moment';
- // eslint-disable-next-line
-import ModalVideo from 'react-modal-video';
+import { motion } from 'framer-motion';
+import { Star, Heart, Calendar, MapPin, Clock, ArrowRight, Trash2 } from 'lucide-react';
 import { addItem, updateItem, removeItem } from './cartHelpers';
-import StarRating from './StarRating';
-import './../../node_modules/react-modal-video/scss/modal-video.scss';
-
 
 const Card = ({
   product,
@@ -16,24 +13,38 @@ const Card = ({
   cartUpdate = false,
   showRemoveProductButton = false,
   setRun = f => f,
-  run = undefined
-  // changeCartSize
+  run = undefined,
+  history
 }) => {
   const [redirect, setRedirect] = useState(false);
-  const [count, setCount] = useState(product.count);
+  const [count, setCount] = useState(product.count || 1);
+  const [isBookmarked, setIsBookmarked] = useState(false);
 
-  const showViewButton = showViewProductButton => {
-    return (
-      showViewProductButton && (
-        <Link to={`/product/${product._id}`} className="mr-2">
-          <button className="btn btn-info mt-2 mb-2 card-btn-1" id="view-product">More Info!</button>
-        </Link>
-      )
-    );
-  };
+  useEffect(() => {
+    // Check if this item is in the cart/wishlist
+    const cart = JSON.parse(localStorage.getItem('cart')) || [];
+    const exists = cart.some(item => item._id === product._id);
+    setIsBookmarked(exists);
+  }, [product._id]);
+
   const addToCart = () => {
-    // console.log('added');
-    addItem(product, setRedirect(true));
+    addItem(product, 1, () => {
+      setIsBookmarked(true);
+      setRedirect(true);
+    });
+  };
+
+  const toggleBookmark = () => {
+    if (isBookmarked) {
+      removeItem(product._id);
+      setIsBookmarked(false);
+      setRun(!run);
+    } else {
+      addItem(product, 1, () => {
+        setIsBookmarked(true);
+        setRun(!run);
+      });
+    }
   };
 
   const shouldRedirect = redirect => {
@@ -42,94 +53,182 @@ const Card = ({
     }
   };
 
-  const showAddToCartBtn = showAddToCartButton => {
-    return (
-      showAddToCartButton && (
-        <button onClick={addToCart} className="btn btn-success mt-2 mb-2 card-btn-1 " id="add-to-cart">
-          Book Now!
+  const handleQtyChange = event => {
+    const val = event.target.value < 1 ? 1 : event.target.value;
+    setCount(val);
+    updateItem(product._id, val);
+    setRun(!run);
+  };
+
+  // Mock static duration & tags
+  const duration = product.duration || "5 Days / 4 Nights";
+  const rating = product.rating || 4.8;
+  const reviewsCount = product.reviewsCount || Math.floor(Math.random() * 40) + 15;
+
+  return (
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      whileHover={{ y: -8, transition: { duration: 0.2 } }}
+      transition={{ duration: 0.4 }}
+      className="premium-card"
+      onClick={(e) => {
+        const target = e.target;
+        if (target.closest('button') || target.closest('a') || target.closest('input')) {
+          return;
+        }
+        history.push(`/product/${product._id}`);
+      }}
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        height: '100%',
+        backgroundColor: 'var(--card-bg)',
+        cursor: 'pointer'
+      }}
+    >
+      {shouldRedirect(redirect)}
+      
+      {/* Image and Badge */}
+      <div className="premium-card-img-wrapper">
+        <ShowImage item={product} url="product" />
+        
+        {/* Season Badge */}
+        <span className="premium-card-badge">
+          {product.quantity > 0 ? "In Season" : "Limited Slot"}
+        </span>
+
+        {/* Bookmark Button */}
+        <button 
+          onClick={toggleBookmark}
+          className={`bookmark-btn ${isBookmarked ? 'active' : ''}`}
+          aria-label="Bookmark destination"
+        >
+          <Heart size={18} fill={isBookmarked ? "var(--danger)" : "none"} />
         </button>
-      )
-    );
-  };
+      </div>
 
-  const showStock = quantity => {
-    return quantity > 0 ? (
-      <span className="badge badge-success badge-pill">In season</span>
-    ) : (
-      <span className="badge badge-success badge-pill">Out of Season</span>
-    );
-  };
+      {/* Card Body */}
+      <div className="premium-card-content" style={{ display: 'flex', flexDirection: 'column', flexGrow: 1, gap: '0.75rem' }}>
+        {/* Destination Location */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+          <MapPin size={14} className="text-secondary" />
+          <span>{product.subname || "India"}</span>
+        </div>
 
-  const handleChange = productId => event => {
-    setRun(!run); // run useEffect in parent Cart
-    setCount(event.target.value < 1 ? 1 : event.target.value);
-    if (event.target.value >= 1) {
-      updateItem(productId, event.target.value);
-    }
-  };
+        {/* Title */}
+        <h3 style={{ fontSize: '1.2rem', fontWeight: '700', lineHeight: '1.3' }}>
+          {product.name}
+        </h3>
 
-  const showCartUpdateOptions = cartUpdate => {
-    return (
-      cartUpdate && (
-        <div>
-          <div className="input-group mb-3">
-            <div className="input-group-prepend">
-              <span className="input-group-text">Adjust Quantity</span>
-            </div>
-            <input type="number" className="form-control" value={count} onChange={handleChange(product._id)} />
+        {/* Rating and Duration */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.85rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+            <Star size={16} fill="var(--accent)" color="var(--accent)" />
+            <span style={{ fontWeight: '600', color: 'var(--text-primary)' }}>{rating}</span>
+            <span style={{ color: 'var(--text-secondary)' }}>({reviewsCount})</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', color: 'var(--text-secondary)' }}>
+            <Clock size={14} />
+            <span>{duration}</span>
           </div>
         </div>
-      )
-    );
-  };
-  const showRemoveButton = showRemoveProductButton => {
-    return (
-      showRemoveProductButton && (
-        <button
-          onClick={() => {
-            removeItem(product._id);
-            setRun(!run); // run useEffect in parent Cart
-          }}
-          className="btn btn-outline-danger mt-2 mb-2"
-        >
-          Remove Product
-        </button>
-      )
-    );
-  };
-  return (
-<div className="border rounded shadow">
-<div className="card m-2 ">
-  <div className="view overlay">
-    {shouldRedirect(redirect)}
-    {/* <a href={product.youtubelink} data-toggle="lightbox" data-gallery="youtubevideos"> */}
-    <ShowImage item={product} url="product" className="img-thumbnail" />
-    <h5 className="ml-2 text-success h5 font-weight-bold pb-2">{product.name}</h5>
-  </div>
-  <div class="card-body m-0 p-0">
-    <div className="d-flex justify-content-between mx-2 mb-0">
-      <h6 className="font-weight-bold h6" style={{fontWeight:"600",fontSize:"0.8em",color:"#eb07c1"}}>{product.subname}</h6>
-      <StarRating />
+
+        {/* Description */}
+        <p style={{
+          fontSize: '0.85rem',
+          color: 'var(--text-secondary)',
+          display: '-webkit-box',
+          WebkitLineClamp: 3,
+          WebkitBoxOrient: 'vertical',
+          overflow: 'hidden',
+          lineHeight: '1.5',
+          marginTop: '0.25rem'
+        }}>
+          {product.description}
+        </p>
+
+        {/* Price & Action Footer */}
+        <div style={{
+          marginTop: 'auto',
+          paddingTop: '1rem',
+          borderTop: '1px solid var(--border-color)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between'
+        }}>
+          <div>
+            <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', display: 'block' }}>Starting from</span>
+            <span style={{ fontSize: '1.3rem', fontWeight: '800', color: 'var(--primary)' }}>₹{product.price}</span>
+          </div>
+
+          <div style={{ display: 'flex', gap: '0.5rem' }}>
+            {showViewProductButton && (
+              <Link to={`/product/${product._id}`} className="btn-premium-outline" style={{ padding: '0.5rem 0.75rem', fontSize: '0.8rem', borderWidth: '1px' }}>
+                Details
+              </Link>
+            )}
+            
+            {showAddToCartButton && product.quantity > 0 && (
+              <button onClick={addToCart} className="btn-premium" style={{ padding: '0.5rem 1rem', fontSize: '0.8rem' }}>
+                Book Now
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Cart Update Options (Quantity / Remove) */}
+        {(cartUpdate || showRemoveProductButton) && (
+          <div style={{
+            marginTop: '0.75rem',
+            paddingTop: '0.75rem',
+            borderTop: '1px dashed var(--border-color)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '1rem'
+          }}>
+            {cartUpdate && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Tickets:</span>
+                <input 
+                  type="number" 
+                  value={count} 
+                  onChange={handleQtyChange}
+                  style={{
+                    width: '60px',
+                    padding: '0.25rem 0.5rem',
+                    borderRadius: 'var(--radius-sm)',
+                    border: '1px solid var(--border-color)',
+                    fontSize: '0.85rem'
+                  }} 
+                />
+              </div>
+            )}
+
+            {showRemoveProductButton && (
+              <button 
+                onClick={() => {
+                  removeItem(product._id);
+                  setRun(!run);
+                }}
+                className="btn-danger-outline"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.25rem',
+                  padding: '0.35rem 0.75rem'
+                }}
+              >
+                <Trash2 size={14} />
+                Remove
+              </button>
+            )}
+          </div>
+        )}
       </div>
-      <div className="mt-2 px-3"><p className="badge badge-warning badge-pill shadow">Price : ₹ {product.price}</p></div>
-  </div>
-</div>
-  <div className="text-justify m-2 p-2" style={{fontSize:"14px",fontWeight:"500"}}>
-    <p classname="text-justify">{product.description.substring(0, 400)}</p>
-    {showViewButton(showViewProductButton)}
-    {showAddToCartBtn(showAddToCartButton)}
-    {showRemoveButton(showRemoveProductButton)}
-    {showCartUpdateOptions(cartUpdate)}
-    <div className="d-flex justify-content-around p-2 m-0">
-    <div className="m-0 p-0 mx-1">
-    {showStock(product.quantity)}
-    </div>
-    <p className=" text-warning mx-1" style={{fontSize:"11px",fontWeight:"600"}}>Added on {moment(product.createdAt).fromNow()}</p>
-    <p className="text-info mx-1"style={{fontWeight:"600",fontSize:"0.7em"}}><span>Category: </span>{product.category && product.category.name}</p>
-  </div>
-  </div>
-</div>
+    </motion.div>
   );
 };
 
-export default Card;
+export default withRouter(Card);

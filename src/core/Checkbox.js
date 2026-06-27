@@ -1,31 +1,50 @@
 import React, { useState } from "react";
-import './../CSS/checkbox.css';
 
-const CheckBox = ({ categories, handleFilters }) => {
-    // eslint-disable-next-line
-    const [value, setValue] = useState(0);
+const CheckBox = ({ categories, selectedCategory, handleFilters }) => {
+    const [localSelected, setLocalSelected] = useState("");
+    const selected = selectedCategory !== undefined ? selectedCategory : localSelected;
 
-    const handleChange = event => {
-        handleFilters(event.target.value);
-        setValue(event.target.value);
+    const handleChange = (id) => {
+        const nextVal = selected === id ? "" : id;
+        if (selectedCategory === undefined) {
+            setLocalSelected(nextVal);
+        }
+        handleFilters(nextVal ? [nextVal] : []);
     };
 
-    return categories.map((c, i) => (
-        <div className="col-md-2 col-sm-4 col-xs-4" style={{height:"max-content"}}>
-        <div key={i} className="category-toolbar form-check form-check-inline my-2 w-100 bg-success rounded border">
-        <label className="form-check-label py-2 d-inline rounded shadow-lg font-weight-bold text-white w-100 text-center">
-            <input
-                onChange={handleChange}
-                value={`${c._id}`}
-                name={c}
-                type="radio"
-                className="mr-2 ml-4"
-            />
-            {c.name}
-        </label>
+    return (
+        <div style={{
+            display: "flex",
+            gap: "0.75rem",
+            flexWrap: "wrap",
+            justifyContent: "center",
+            width: "100%"
+        }}>
+            {categories.map((c, i) => {
+                const isChecked = selected === c._id;
+                return (
+                    <button
+                        key={i}
+                        type="button"
+                        onClick={() => handleChange(c._id)}
+                        style={{
+                            padding: "0.5rem 1.25rem",
+                            borderRadius: "var(--radius-2xl)",
+                            border: `1px solid ${isChecked ? "var(--primary)" : "var(--border-color)"}`,
+                            backgroundColor: isChecked ? "var(--primary)" : "var(--card-bg)",
+                            color: isChecked ? "#FFFFFF" : "var(--text-secondary)",
+                            fontWeight: "600",
+                            fontSize: "0.85rem",
+                            cursor: "pointer",
+                            transition: "all 0.2s ease"
+                        }}
+                    >
+                        {c.name}
+                    </button>
+                );
+            })}
         </div>
-        </div>
-    ));
+    );
 };
 
 export default CheckBox;

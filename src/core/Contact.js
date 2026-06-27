@@ -11,14 +11,14 @@ export default function Contact() {
                     <div className="card-header text-center bg-success">
                         <h3 className="text-center font-weight-bold text-white">Contact Us</h3>
                         <i className="fa fa-envelope fa-4x text-center text-white" aria-hidden="true"></i>
-                        <p className="text-justify m-3 text-white">Founded in 2020, TravelYaari is India’s leading online travel marketplace bringing both the traveler and expert Travel-Agents on a common platform.</p>
+                        <p className="text-justify m-3 text-white">Founded in 2020, TravelYatra is India’s leading online travel marketplace bringing both the traveler and expert Travel-Agents on a common platform.</p>
                     </div>
                     <div className="card-body">
                         <ul className="list-group">
                             <li className="list-group-item">
                                 <h4 className="text-info"><i class="fa fa-thumb-tack fa-1x" aria-hidden="true"></i> Location</h4>
                             </li>
-                            <li className="list-group-item">TravelYaari Agency</li>
+                            <li className="list-group-item">TravelYatra Agency</li>
                             <li className="list-group-item ">Gorakhpur, Uttar Pradesh</li>
                             <li className="list-group-item">India, 274203</li>
                         </ul>
