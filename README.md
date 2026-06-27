@@ -1,4 +1,4 @@
-# **Project Name : - TravelYaari**
+# **Project Name : - TravelYatra**
 
    ![](https://img.shields.io/badge/MongoDB-4.2.13-003300?style=flat-circle&logo=MongoDB)
    ![](https://img.shields.io/badge/ExpressJS-4.17.1-000000?style=flat-circle&logo=Express)
