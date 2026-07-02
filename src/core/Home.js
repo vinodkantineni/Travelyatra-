@@ -22,7 +22,7 @@ import { photos } from './Photos';
 const Home = ({ history }) => {
     const [productsBySell, setProductsBySell] = useState([]);
     const [productsByArrival, setProductsByArrival] = useState([]);
-    const [error, setError] = useState(false);
+    const [, setError] = useState(false);
 
     // State for Testimonials Carousel
     const [currentTestimonial, setCurrentTestimonial] = useState(0);
@@ -107,7 +107,7 @@ const Home = ({ history }) => {
             window.removeEventListener('scroll', handleScroll);
             clearInterval(timer);
         };
-    }, []);
+    }, [testimonials.length]);
 
     const handleSendMessage = (e) => {
         e.preventDefault();

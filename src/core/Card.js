@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link, Redirect, withRouter } from 'react-router-dom';
 import ShowImage from './ShowImage';
-import moment from 'moment';
 import { motion } from 'framer-motion';
-import { Star, Heart, Calendar, MapPin, Clock, ArrowRight, Trash2 } from 'lucide-react';
+import { Star, Heart, MapPin, Clock, Trash2 } from 'lucide-react';
 import { addItem, updateItem, removeItem } from './cartHelpers';
 
 const Card = ({

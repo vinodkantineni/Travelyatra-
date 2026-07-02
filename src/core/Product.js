@@ -6,7 +6,6 @@ import { addItem } from './cartHelpers';
 import { 
   Star, 
   MapPin, 
-  Clock, 
   Play, 
   Heart, 
   CheckCircle2, 
@@ -20,7 +19,7 @@ import {
 
 const Product = (props) => {
     const [product, setProduct] = useState({});
-    const [error, setError] = useState(false);
+    const [, setError] = useState(false);
     const [selectedImg, setSelectedImg] = useState("");
     const [isVideoOpen, setIsVideoOpen] = useState(false);
 

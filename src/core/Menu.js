@@ -12,10 +12,6 @@ import {
   Menu as MenuIcon, 
   X, 
   LogOut, 
-  Compass, 
-  Briefcase,
-  Plane,
-  Hotel,
   Globe
 } from "lucide-react";
 

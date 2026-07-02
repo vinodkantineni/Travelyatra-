@@ -13,14 +13,14 @@ const Shop = ({ history }) => {
         filters: { category: [], price: [], search: "" }
     });
     const [categories, setCategories] = useState([]);
-    const [error, setError] = useState(false);
-    const [limit, setLimit] = useState(6);
+    const [, setError] = useState(false);
+    const [limit] = useState(6);
     const [skip, setSkip] = useState(0);
     const [size, setSize] = useState(0);
     const [filteredResults, setFilteredResults] = useState([]);
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedCategory, setSelectedCategory] = useState("");
-    const [selectedPrice, setSelectedPrice] = useState("");
+    const [, setSelectedPrice] = useState("");
 
     const init = () => {
         getCategories().then(data => {

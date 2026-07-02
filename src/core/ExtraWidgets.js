@@ -5,11 +5,6 @@ import {
   CloudSun, 
   TrendingUp, 
   ArrowRightLeft, 
-  Check, 
-  Plus, 
-  HelpCircle,
-  MapPin,
-  Calendar,
   CloudSnow,
   Sun,
   CloudRain
